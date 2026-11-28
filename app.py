@@ -8,7 +8,7 @@ def format_gender(gender: str | None) -> str:
     if gender == "Male":
         return ":blue[♂] Male"
     if gender == "Female":
-        return ":pink[♀] Female"
+        return ":red[♀] Female"
     return ""
 
 
@@ -25,7 +25,7 @@ pals = db_obj.fetch_all_pals()
 males = [p for p in pals if p.get("gender") == "Male"]
 females = [p for p in pals if p.get("gender") == "Female"]
 all_parent_options = {
-    p["id"]: f"{p['pal_name']} ({':blue[♂]' if p['gender'] == 'Male' else ':pink[♀]'})"
+    p["id"]: f"{p['pal_name']} ({':blue[♂]' if p['gender'] == 'Male' else ':red[♀]'})"
     for p in males + females
 }
 
@@ -80,7 +80,7 @@ partial_count = sum(
 )
 
 st.caption(
-    f"Pool: {len(males)} :blue[♂] × {len(females)} :pink[♀] = {total_combos} Combinations | "
+    f"Pool: {len(males)} :blue[♂] × {len(females)} :red[♀] = {total_combos} Combinations | "
     f"Full (2/2): {fully_completed_count} | Partial (1/2): {partial_count}"
 )
 if total_combos > 0:
@@ -103,7 +103,7 @@ else:
     # Touch-friendly column layout for iPad
     h_status, h_pair, h_name, h_gender, h_action = st.columns([0.6, 3.0, 2.5, 2.2, 1.5])
     h_status.markdown("**Status**")
-    h_pair.markdown("**Parent Pair (:blue[♂] × :pink[♀])**")
+    h_pair.markdown("**Parent Pair (:blue[♂] × :red[♀])**")
     h_name.markdown("**Offspring Name**")
     h_gender.markdown("**Gender**")
     h_action.markdown("**Action**")
@@ -139,10 +139,10 @@ else:
                     st.markdown("🟠")
 
             with col_pair:
-                st.markdown(f"**{m['pal_name']}** :blue[♂] × **{f['pal_name']}** :pink[♀]")
+                st.markdown(f"**{m['pal_name']}** :blue[♂] × **{f['pal_name']}** :red[♀]")
                 if registered_children:
                     badges = ", ".join(
-                        f"{c['pal_name']} ({':blue[♂]' if c.get('gender') == 'Male' else ':pink[♀]'})"
+                        f"{c['pal_name']} ({':blue[♂]' if c.get('gender') == 'Male' else ':red[♀]'})"
                         for c in registered_children
                     )
                     st.caption(f"Registered ({len(registered_children)}/2): {badges}")
