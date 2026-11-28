@@ -12,6 +12,10 @@ def format_gender(gender: str | None) -> str:
     return ""
 
 
+def pal_entity_key(pal_name: str | None, gender: str | None) -> tuple[str, str]:
+    return ((pal_name or "").strip().lower(), (gender or "").strip())
+
+
 def is_same_pal(m: dict, f: dict) -> bool:
     m_name = (m.get("pal_name") or "").strip().lower()
     f_name = (f.get("pal_name") or "").strip().lower()
@@ -25,8 +29,18 @@ def get_db_obj():
 
 db_obj = get_db_obj()
 
-# Load Pals from Postgres
-pals = db_obj.fetch_all_pals()
+# Load rows from Postgres and deduplicate Pals by (pal_name, gender)
+raw_pals = db_obj.fetch_all_pals()
+
+unique_pals_by_key: dict[tuple[str, str], dict] = {}
+for p in raw_pals:
+    key = pal_entity_key(p.get("pal_name"), p.get("gender"))
+    if not key[0] or key[1] not in ("Male", "Female"):
+        continue
+    if key not in unique_pals_by_key:
+        unique_pals_by_key[key] = p
+
+pals = list(unique_pals_by_key.values())
 
 males = [p for p in pals if p.get("gender") == "Male"]
 females = [p for p in pals if p.get("gender") == "Female"]
@@ -37,7 +51,7 @@ all_parent_options = {
 
 # Map completed combos by unordered parent pair -> list of registered offspring (max 2: M & F)
 completed_combos: dict[frozenset, list[dict]] = {}
-for p in pals:
+for p in raw_pals:
     p1, p2 = p.get("parent_1"), p.get("parent_2")
     if p1 and p2 and p.get("complete"):
         pair_key = frozenset([p1, p2])
@@ -221,7 +235,7 @@ else:
                 use_container_width=True,
             ):
                 clean_child = child_name.strip()
-                child_id = f"{clean_child}_{child_gender}_{m['id']}_{f['id']}"
+                child_id = f"{clean_child}_{child_gender}"
 
                 db_obj.upsert_pal(
                     pal_id=child_id,
